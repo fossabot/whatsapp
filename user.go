@@ -428,9 +428,10 @@ func (user *User) DeleteSession() {
 	}
 
 	// Delete all of the backfill and history sync data.
-	user.bridge.DB.BackfillQuery.DeleteAll(user.MXID)
-	user.bridge.DB.HistorySyncQuery.DeleteAllConversations(user.MXID)
-	user.bridge.DB.HistorySyncQuery.DeleteAllMessages(user.MXID)
+	user.bridge.DB.Backfill.DeleteAll(user.MXID)
+	user.bridge.DB.HistorySync.DeleteAllConversations(user.MXID)
+	user.bridge.DB.HistorySync.DeleteAllMessages(user.MXID)
+	user.bridge.DB.MediaBackfillRequest.DeleteAllMediaBackfillRequests(user.MXID)
 }
 
 func (user *User) IsConnected() bool {
@@ -954,7 +955,7 @@ func (user *User) GetPortalByJID(jid types.JID) *Portal {
 }
 
 func (user *User) syncPuppet(jid types.JID, reason string) {
-	user.bridge.GetPuppetByJID(jid).SyncContact(user, false, reason)
+	user.bridge.GetPuppetByJID(jid).SyncContact(user, false, false, reason)
 }
 
 func (user *User) ResyncContacts() error {
@@ -1123,7 +1124,7 @@ func (user *User) handlePictureUpdate(evt *events.Picture) {
 func (user *User) StartPM(jid types.JID, reason string) (*Portal, *Puppet, bool, error) {
 	user.log.Debugln("Starting PM with", jid, "from", reason)
 	puppet := user.bridge.GetPuppetByJID(jid)
-	puppet.SyncContact(user, true, reason)
+	puppet.SyncContact(user, true, false, reason)
 	portal := user.GetPortalByJID(puppet.JID)
 	if len(portal.MXID) > 0 {
 		ok := portal.ensureUserInvited(user)
