@@ -223,7 +223,7 @@ func (handler *CommandHandler) CommandSetRelay(ce *CommandEvent) {
 		ce.Reply("Only admins are allowed to enable relay mode on this instance of the bridge")
 	} else {
 		ce.Portal.RelayUserID = ce.User.MXID
-		ce.Portal.Update()
+		ce.Portal.Update(nil)
 		ce.Reply("Messages from non-logged-in users in this room will now be bridged through your WhatsApp account")
 	}
 }
@@ -239,7 +239,7 @@ func (handler *CommandHandler) CommandUnsetRelay(ce *CommandEvent) {
 		ce.Reply("Only admins are allowed to enable relay mode on this instance of the bridge")
 	} else {
 		ce.Portal.RelayUserID = ""
-		ce.Portal.Update()
+		ce.Portal.Update(nil)
 		ce.Reply("Messages from non-logged-in users will no longer be bridged in this room")
 	}
 }
@@ -461,7 +461,7 @@ func (handler *CommandHandler) CommandCreate(ce *CommandEvent) {
 		portal.Encrypted = true
 	}
 
-	portal.Update()
+	portal.Update(nil)
 	portal.UpdateBridgeInfo()
 
 	ce.Reply("Successfully created WhatsApp group %s", portal.Key.JID)
@@ -888,10 +888,10 @@ func (handler *CommandHandler) CommandBackfill(ce *CommandEvent) {
 			return
 		}
 	}
-	backfillMessages := ce.Portal.bridge.DB.Backfill.NewWithValues(ce.User.MXID, database.BackfillImmediate, 0, &ce.Portal.Key, nil, nil, batchSize, -1, batchDelay)
+	backfillMessages := ce.Portal.bridge.DB.Backfill.NewWithValues(ce.User.MXID, database.BackfillImmediate, 0, &ce.Portal.Key, nil, batchSize, -1, batchDelay)
 	backfillMessages.Insert()
 
-	ce.User.BackfillQueue.ReCheckQueue <- true
+	ce.User.BackfillQueue.ReCheck()
 }
 
 const cmdListHelp = `list <contacts|groups> [page] [items per page] - Get a list of all contacts and groups.`
@@ -1135,7 +1135,10 @@ func (handler *CommandHandler) CommandSync(ce *CommandEvent) {
 	if appState {
 		for _, name := range appstate.AllPatchNames {
 			err := ce.User.Client.FetchAppState(name, true, false)
-			if err != nil {
+			if errors.Is(err, appstate.ErrKeyNotFound) {
+				ce.Reply("Key not found error syncing app state %s: %v\n\nKey requests are sent automatically, and the sync should happen in the background after your phone responds.", name, err)
+				return
+			} else if err != nil {
 				ce.Reply("Error syncing app state %s: %v", name, err)
 			} else if name == appstate.WAPatchCriticalUnblockLow {
 				ce.Reply("Synced app state %s, contact sync running in background", name)
@@ -1243,7 +1246,7 @@ func (handler *CommandHandler) CommandDisappearingTimer(ce *CommandEvent) {
 		ce.Portal.ExpirationTime = prevExpirationTime
 		return
 	}
-	ce.Portal.Update()
+	ce.Portal.Update(nil)
 	if !ce.Portal.IsPrivateChat() && !ce.Bridge.Config.Bridge.DisappearingMessagesInGroups {
 		ce.Reply("Disappearing timer changed successfully, but this bridge is not configured to disappear messages in group chats.")
 	} else {
