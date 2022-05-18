@@ -8,7 +8,7 @@ RUN go build -o /usr/bin/mautrix-whatsapp
 
 # We KN removed jq from apk add to build it from scratch
 RUN git clone https://github.com/stedolan/jq.git /test
-RUN /test/jq/ autoreconf -i
+RUN cd /test/jq/ && autoreconf -i
 RUN /test/jq/configure --disable-maintainer-mode
 RUN /test/jq/ make &&  /test/jq/ make install
 
