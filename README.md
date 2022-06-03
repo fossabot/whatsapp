@@ -1,4 +1,6 @@
 # mautrix-whatsapp
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkgncloud%2Fwhatsapp.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkgncloud%2Fwhatsapp?ref=badge_shield)
+
 A Matrix-WhatsApp puppeting bridge based on [whatsmeow](https://github.com/tulir/whatsmeow).
 
 ### Documentation
@@ -16,3 +18,7 @@ contains a general overview of what is supported by the bridge.
 
 ## Discussion
 Matrix room: [#whatsapp:maunium.net](https://matrix.to/#/#whatsapp:maunium.net)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkgncloud%2Fwhatsapp.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkgncloud%2Fwhatsapp?ref=badge_large)
